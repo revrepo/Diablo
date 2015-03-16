@@ -114,6 +114,10 @@ exports.putter = function(db) {
       revlogger.log('info',"Inserting Metric details into metrics collection");
     }
 
+    if(event && event.d && event.d.transactionId) {
+        revlogger.log('info',"Record Saved with Transaction # "+event.d.transactionId);
+    }
+
     //console.log("EVENT",collection(type).events.db);
     //console.log("SERVER STATUS",collection(type).events.db.serverConfig._serverState);
 
