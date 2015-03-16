@@ -8,6 +8,10 @@ var mongodb = require("mongodb"),
     bisect = require("./bisect"),
     ObjectID = mongodb.ObjectID;
 
+/*********** For SysLog Integration **********/
+var revlogger = require("rev-logger");
+/*********** For SysLog Integration **********/
+
 var type_re = /^[a-z][a-zA-Z0-9_]+$/,
     invalidate = {$set: {i: true}},
     multi = {multi: true},
@@ -29,12 +33,24 @@ exports.putter = function(db) {
       timesToInvalidateByTierByType = {};
 
   function putter(request, callback) {
+    if(request && request.type=='pl_info') {
+        revlogger.log('info',"Request came to insert the event details");
+    } else if(request && request.type=='cube_request') {
+      revlogger.log('info',"Request came to insert the metrics details");
+    }
+
     var time = "time" in request ? new Date(request.time) : new Date(),
         type = request.type;
 
     // Validate the date and type.
-    if (!type_re.test(type)) return callback({error: "invalid type"}), -1;
-    if (isNaN(time)) return callback({error: "invalid time"}), -1;
+    if (!type_re.test(type)){
+      revlogger.log('error',"Invalid Type in the expression");
+      return callback({error: "invalid type"}), -1;
+    } 
+    if (isNaN(time)) {
+      revlogger.log('error',"Invalid Time in the expression");
+      return callback({error: "invalid time"}), -1;
+    }
 
     // If an id is specified, promote it to Mongo's primary key.
     var event = {t: time, d: request.data};
@@ -92,8 +108,37 @@ exports.putter = function(db) {
   // likelihood of a race condition between when the events are read by the
   // evaluator and when the newly-computed metrics are saved.
   function save(type, event) {
-    collection(type).events.save(event, handle);
-    queueInvalidation(type, event);
+    if(type && type=='pl_info') {
+      revlogger.log('info',"Inserting Event details into event collection");
+    } else if(type && type=='cube_request') {
+      revlogger.log('info',"Inserting Metric details into metrics collection");
+    }
+
+    //console.log("EVENT",collection(type).events.db);
+    //console.log("SERVER STATUS",collection(type).events.db.serverConfig._serverState);
+
+    revlogger.log('info',"Database mode "+collection(type).events.db.serverConfig._serverState);
+
+    if(collection(type).events.db.serverConfig._serverState=='readonly') {
+        revlogger.log('emerg',"Database is in readonly mode, not able to insert the data");
+    }
+
+    if(collection(type).events.db.serverConfig._serverState=='disconnected') {
+        revlogger.log('emerg',"Unable to connect to mongo db, Please check the mongo db connection");
+    }
+
+    if(collection(type).events.db.serverConfig._serverState!='readonly' && collection(type).events.db.serverConfig._serverState!='disconnected') {
+       collection(type).events.save(event, handle); 
+
+      if(event && event._id) {
+        if(type && type=='pl_info') {
+          revlogger.log('info',"Event Saved with the OBJECT ID: "+event._id);
+        } else if(type && type=='cube_request') {
+          revlogger.log('info',"cube_request_events Saved with the OBJECT ID: "+event._id);
+        }
+      }
+      queueInvalidation(type, event);
+    }
   }
 
   // Schedule deferred invalidation of metrics for this type.
@@ -145,20 +190,35 @@ exports.getter = function(db) {
       streamsBySource = {};
 
   function getter(request, callback) {
+    revlogger.log('info',"Request came to get the Event details");
+
+    // logger.log('emerg',"cube winston test emerg message");
+    // logger.log('alert',"cube winston test alert message");
+    // logger.log('crit',"cube winston test crit message");
+    // logger.log('error',"cube winston test error message");
+    // logger.log('warning',"cube winston test warning message");
+
     var stream = !("stop" in request),
         delay = "delay" in request ? +request.delay : streamDelayDefault,
         start = new Date(request.start),
         stop = stream ? new Date(Date.now() - delay) : new Date(request.stop);
 
     // Validate the dates.
-    if (isNaN(start)) return callback({error: "invalid start"}), -1;
-    if (isNaN(stop)) return callback({error: "invalid stop"}), -1;
+    if (isNaN(start)) { 
+      revlogger.log('error',"Invalid Start date in the expression");
+      return callback({error: "invalid start"}), -1;
+    }
+    if (isNaN(stop)) {
+      revlogger.log('error',"Invalid End date in the expression");
+      return callback({error: "invalid stop"}), -1;
+    }
 
     // Parse the expression.
     var expression;
     try {
       expression = parser.parse(request.expression);
     } catch (error) {
+      revlogger.log('error',"Invalid expression");
       return callback({error: "invalid expression"}), -1;
     }
 
@@ -260,7 +320,10 @@ exports.getter = function(db) {
 };
 
 function handle(error) {
-  if (error) throw error;
+  if (error) {
+        revlogger.log('error',"Error while processing the event request"+JSON.stringify(error));
+        throw error;
+  } 
 }
 
 function open(callback) {

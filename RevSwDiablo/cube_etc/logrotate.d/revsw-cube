@@ -1,0 +1,9 @@
+/opt/revsw-cube/log/cube.log {
+  rotate 15
+  daily
+  compress
+  missingok
+  notifempty
+  dateext
+  copytruncate
+}

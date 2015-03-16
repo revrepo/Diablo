@@ -7,6 +7,10 @@ var parser = require("./metric-expression"),
     event = require("./event"),
     setImmediate = require("./set-immediate");
 
+/*********** For SysLog Integration **********/
+var revlogger = require("rev-logger");
+/*********** For SysLog Integration **********/
+
 var metric_fields = {v: 1},
     metric_options = {sort: {"_id.t": 1}, batchSize: 1000},
     event_options = {sort: {t: 1}, batchSize: 1000};
@@ -19,19 +23,29 @@ exports.getter = function(db) {
       meta = event.putter(db);
 
   function getter(request, callback) {
+    revlogger.log('info',"Calling Metrics getter method");
+
     var start = new Date(request.start),
         stop = new Date(request.stop),
         id = request.id;
 
     // Validate the dates.
-    if (isNaN(start)) return callback({error: "invalid start"}), -1;
-    if (isNaN(stop)) return callback({error: "invalid stop"}), -1;
+    if (isNaN(start)){
+          revlogger.log('error',"Invalid Start date in the expression");
+          return callback({error: "invalid start"}), -1;
+    } 
+    if (isNaN(stop)) {
+      revlogger.log('error',"Invalid End date in the expression");
+      return callback({error: "invalid stop"}), -1;
+    }
 
     // Parse the expression.
     var expression;
     try {
       expression = parser.parse(request.expression);
     } catch (e) {
+      revlogger.log('error',"Invalid expression");
+
       return callback({error: "invalid expression"}), -1;
     }
 
@@ -200,6 +214,8 @@ exports.getter = function(db) {
       }
 
       function save(time, value) {
+        revlogger.log('info',"Inserting Metrics details into metric collection");
+
         callback(time, value);
         if (value) {
           type.metrics.save({
@@ -243,5 +259,8 @@ exports.getter = function(db) {
 };
 
 function handle(error) {
-  if (error) throw error;
+  if (error) {
+    revlogger.log('error',"Error while processing the metrics request"+error);
+    throw error;
+  }
 }

@@ -1,5 +1,4 @@
 var endpoint = require("./endpoint");
-
 //
 var headers = {
   "Content-Type": "application/json",
@@ -27,6 +26,7 @@ exports.register = function(db, endpoints) {
 };
 
 function post(putter) {
+
   return function(request, response) {
     var content = "";
     request.on("data", function(chunk) {
