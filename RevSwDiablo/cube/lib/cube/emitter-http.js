@@ -6,7 +6,7 @@ var batchSize = 500,      // events per batch
     errorInterval = 1000; // ms between retries
 
 // returns an emitter which POSTs events up to 500 at a time to the given http://host:port
-module.exports = function(protocol, host, port) {  
+module.exports = function(protocol, host, port) {
   var emitter = {},
       queue = [],
       closing;
@@ -16,8 +16,6 @@ module.exports = function(protocol, host, port) {
   function send() {
     var events = queue.splice(0, batchSize),
         body = JSON.stringify(events);
-
-    console.log("CALLED EMITTER SEND",host,port);
 
     http.request({
       host: host,
@@ -43,8 +41,6 @@ module.exports = function(protocol, host, port) {
   }
 
   emitter.send = function(event) {
-        console.log("CALLED EMITTER  SS SEND",host,port);
-
     if (!closing && queue.push(event) === 1) setTimeout(send, batchInterval);
     return emitter;
   };

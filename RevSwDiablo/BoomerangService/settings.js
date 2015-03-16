@@ -11,18 +11,7 @@ module.exports = {
 	key_path : '/etc/ssl/revsw/revsw.net.key',
 	cert_path : '/etc/ssl/revsw/revsw.net.crt',
 	ca_path : '/etc/ssl/revsw/gd_bundle-g2.crt',
-	/*cube:[{
+	cube:[{
 		protocol:"ws",domain:"localhost",port:"1080", client : null
-	}]*/
-
-	cube:[
-        { protocol:"ws",domain:"cube1-03-prod-sjc.revsw.net",port:"1080", client : null },
-        { protocol:"ws",domain:"cube1-03-prod-sjc.revsw.net",port:"1082", client : null },
-        { protocol:"ws",domain:"cube1-03-prod-sjc.revsw.net",port:"1084", client : null },
-        { protocol:"ws",domain:"cube1-03-prod-sjc.revsw.net",port:"1086", client : null },
-        { protocol:"ws",domain:"cube2-03-prod-sjc.revsw.net",port:"1080", client : null },
-        { protocol:"ws",domain:"cube2-03-prod-sjc.revsw.net",port:"1082", client : null },
-        { protocol:"ws",domain:"cube2-03-prod-sjc.revsw.net",port:"1084", client : null },
-        { protocol:"ws",domain:"cube2-03-prod-sjc.revsw.net",port:"1086", client : null },
-    ]
+	}]
 };

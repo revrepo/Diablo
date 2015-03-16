@@ -1,5 +1,5 @@
 var socket = require("websocket");
-var settings = require("../config/config");
+var settings = require("./settings");
 var BridgeClient = socket.client;
 var client = null;
 exports.init = function(callback) {

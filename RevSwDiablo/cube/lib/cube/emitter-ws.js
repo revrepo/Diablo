@@ -1,8 +1,6 @@
 var util = require("util"),
     websocket = require("websocket");
 
-
-
 // returns an emitter which sends events one at a time to the given ws://host:port
 module.exports = function(protocol, host, port) {
   var emitter = {},
@@ -11,7 +9,6 @@ module.exports = function(protocol, host, port) {
       socket,
       timeout,
       closing;
-    console.log("BBB",url);
 
   function close() {
     if (socket) {
@@ -32,11 +29,9 @@ module.exports = function(protocol, host, port) {
   }
 
   function open() {
-    console.log("CON OPEN");
     timeout = 0;
     close();
     util.log("opening socket: " + url);
-
     var client = new websocket.client();
     client.on("connect", function(connection) {
       socket = connection;
@@ -76,8 +71,6 @@ module.exports = function(protocol, host, port) {
   }
 
   emitter.send = function(event) {
-  console.log("CALLED EMITTER  SS SEND",event);
-
     queue.push(event);
     if (socket) flush();
     return emitter;

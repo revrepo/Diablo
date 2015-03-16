@@ -1,8 +1,3 @@
-/*********** For SysLog Integration **********/
-var revlogger = require("rev-logger");
-/*********** For SysLog Integration **********/
-
-
 var endpoint = require("./endpoint"),
     url = require("url");
 
@@ -40,8 +35,6 @@ exports.register = function(db, endpoints) {
   );
 
   function eventGet(request, response) {
-    revlogger.log('info',"Request came to get the Event details");
-
     request = url.parse(request.url, true).query;
 
     var data = [];
@@ -66,8 +59,6 @@ exports.register = function(db, endpoints) {
   }
 
   function metricGet(request, response) {
-    revlogger.log('info',"Request came to get the Metrics details");
-
     request = url.parse(request.url, true).query;
 
     var data = [],

@@ -7,10 +7,6 @@ var util = require("util"),
     static = require("node-static"),
     database = require('./database');
 
-/*********** For SysLog Integration **********/
-var revlogger = require("rev-logger");
-/*********** For SysLog Integration **********/
-
 // And then this happened:
 websprocket.Connection = require("../../node_modules/websocket-server/lib/ws/connection");
 
@@ -31,9 +27,6 @@ module.exports = function(options) {
 
   // Don't crash on errors.
   process.on("uncaughtException", function(error) {
-    revlogger.log('emerg',"Uncaught exception in server.js file of cube"+JSON.stringify(error));
-    revlogger.log('emerg',"Uncaught exception in server.js file of cube"+JSON.stringify(error.stack));
-
     util.log("uncaught exception: " + error);
     util.log(error.stack);
   });
@@ -70,9 +63,11 @@ module.exports = function(options) {
   });
 
   function connect(connection, request) {
+
     // Forward messages to the appropriate endpoint, or close the connection.
     for (var i = -1, n = endpoints.ws.length, e; ++i < n;) {
       if ((e = endpoints.ws[i]).match(request.url)) {
+
         var callback = function(response) {
           connection.sendUTF(JSON.stringify(response));
         };
@@ -148,10 +143,7 @@ module.exports = function(options) {
     // Connect to mongodb.
     util.log("starting mongodb client");
     database.open(options, function (error, db) {
-      if (error) {
-        revlogger.log('emerg',"Error while starting the server"+error);
-        throw error;
-      } 
+      if (error) throw error;
       server.register(db, endpoints);
       meta = require("./event").putter(db);
       util.log("starting http server on port " + options["http-port"]);
