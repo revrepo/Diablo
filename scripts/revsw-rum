@@ -38,7 +38,7 @@ case "$1" in
                 
                 log_action_msg "Starting RUM Service..." || true        
                 
-                cd $base_path/BoomerangService/
+                cd $base_path/
                 forever start --append -o $base_path/log/rum.log server.js
 
         ;;
@@ -46,7 +46,7 @@ case "$1" in
 
                 log_daemon_msg "Stopping RUM Service..." || true
 
-                cd $base_path/BoomerangService/
+                cd $base_path/
                 forever stop -o $base_path/log/rum.log server.js
                          
         ;;

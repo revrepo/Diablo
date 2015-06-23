@@ -6,7 +6,7 @@
 // For Collector Bridge
 var collectorBridge = require("./collector_bridge");
 // Settings 
-var settings = require("../config/config");
+var settings = require("./config/config");
 //var settings = require("./settings");
 //logging
 var log= require("co-logger");
